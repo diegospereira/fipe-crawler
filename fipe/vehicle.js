@@ -60,6 +60,6 @@ module.exports = class Vehicle {
   }
 
   get queryDate() {
-    return this._queryDate;
+    return this._queryDate.toISOString();
   }
 }
