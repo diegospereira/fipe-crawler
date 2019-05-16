@@ -1,3 +1,4 @@
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
 const FIPE = require('./fipe.js');
 
 
@@ -38,6 +39,28 @@ async function main() {
     console.log(`Found ${vehicles.length} vehicles so far...`);
   }
   console.log(`Found ${vehicles.length} vehicles`);
+
+  const csvWriter = createCsvWriter({  
+    path: 'fipe-crawler.csv',
+    header: [
+      { id: 'value', title: 'Valor' },
+      { id: 'brand', title: 'Marca' },
+      { id: 'model', title: 'Modelo' },
+      { id: 'modelYear', title: 'AnoModelo' },
+      { id: 'fuel', title: 'Combustivel' },
+      { id: 'fipeCode', title: 'CodigoFipe' },
+      { id: 'refMonth', title: 'MesReferencia' },
+      { id: 'auth', title: 'Autenticacao' },
+      { id: 'vehicleType', title: 'TipoVeiculo' },
+      { id: 'fuelCode', title: 'SiglaCombustivel' },
+      { id: 'queryDate', title: 'DataConsulta' }
+    ]
+  });
+
+  csvWriter  
+    .writeRecords(vehicles)
+    .then(() => console.log('The CSV file was written successfully'));
+  
 };
 
 main();
