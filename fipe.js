@@ -1,13 +1,13 @@
-'use strict';
+'use strict'
 
-const request = require('request-promise');
-const querystring = require('querystring');
+const request = require('request-promise')
+const querystring = require('querystring')
 
-const TableVersion = require('./fipe/tableVersion.js');
-const Brand = require('./fipe/brand.js');
-const Model = require('./fipe/model.js');
-const Year = require('./fipe/year.js');
-const Vehicle = require('./fipe/vehicle.js');
+const TableVersion = require('./fipe/tableVersion.js')
+const Brand = require('./fipe/brand.js')
+const Model = require('./fipe/model.js')
+const Year = require('./fipe/year.js')
+const Vehicle = require('./fipe/vehicle.js')
 
 
 
@@ -18,7 +18,7 @@ let default_headers = {
   'Accept-Language': 'en-US,en;q=0.5',
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
   'Referer': 'https://veiculos.fipe.org.br/'
-};
+}
 
 module.exports = class FIPE {
 
@@ -30,18 +30,18 @@ module.exports = class FIPE {
       uri: `${base_url}/api/veiculos/ConsultarTabelaDeReferencia`,
       json: true,
       transform: (tables) => {
-        return tables.map(table => new TableVersion(table));
+        return tables.map(table => new TableVersion(table))
       }
-    };
+    }
 
-    return await request(opts);
-  };
+    return await request(opts)
+  }
 
   async brands(table, vehicleTypeCode) {
     let data = {
       codigoTabelaReferencia: table.refTableId,
       codigoTipoVeiculo: vehicleTypeCode
-    };
+    }
 
     let opts = {
       method: 'POST',
@@ -50,12 +50,12 @@ module.exports = class FIPE {
       uri: `${base_url}/api/veiculos/ConsultarMarcas`,
       json: true,
       transform: (brands) => {
-        return brands.map(brand => new Brand(brand));
+        return brands.map(brand => new Brand(brand))
       }
-    };
+    }
 
-    return await request(opts);
-  };
+    return await request(opts)
+  }
 
   async models(table, vehicleTypeCode, brand) {
     let data = {
@@ -67,7 +67,7 @@ module.exports = class FIPE {
       codigoTipoCombustivel: null,
       anoModelo: null,
       modeloCodigoExterno: null 
-    };
+    }
 
     let opts = {
       method: 'POST',
@@ -76,12 +76,12 @@ module.exports = class FIPE {
       uri: `${base_url}/api/veiculos/ConsultarModelos`,
       json: true,
       transform: ({ Modelos, _Anos }) => {
-        return Modelos.map(modelo => new Model(modelo, brand));
+        return Modelos.map(modelo => new Model(modelo, brand))
       }
-    };
+    }
 
-    return await request(opts);
-  };
+    return await request(opts)
+  }
 
   async modelYears(table, vehicleTypeCode, model) {
     let data = {
@@ -93,7 +93,7 @@ module.exports = class FIPE {
       codigoTipoCombustivel: null,
       anoModelo: null,
       modeloCodigoExterno: null 
-    };
+    }
 
     let opts = {
       method: 'POST',
@@ -102,12 +102,39 @@ module.exports = class FIPE {
       uri: `${base_url}/api/veiculos/ConsultarAnoModelo`,
       json: true,
       transform: (years) => {
-        return years.map(year => new Year(year, model));
+        return years.map(year => new Year(year, model))
       }
-    };
+    }
 
-    return await request(opts);
-  };
+    return await request(opts)
+  }
+
+  async modelDataFromFipe(table, vehicleTypeCode, fipeCode, year, fuelCode) {
+    let data = {
+      codigoTabelaReferencia: table.refTableId,
+      codigoModelo: null,
+      codigoMarca: null,
+      codigoTipoVeiculo: vehicleTypeCode,
+      anoModelo: year,
+      codigoTipoCombustivel: fuelCode,
+      tipoVeiculo: 'carro',
+      modeloCodigoExterno: fipeCode,
+      tipoConsulta: 'codigo'
+    }
+
+    let opts = {
+      method: 'POST',
+      body: querystring.stringify(data),
+      headers: default_headers,
+      uri: `${base_url}/api/veiculos/ConsultarValorComTodosParametros`,
+      json: true,
+      transform: (vehicle) => {
+        return Object.keys(vehicle).includes('erro') ? undefined : new Vehicle(vehicle)
+      }
+    }
+
+    return await request(opts)
+  }
 
   async vehicle(table, vehicleTypeCode, year) {
     let data = {
@@ -120,7 +147,7 @@ module.exports = class FIPE {
       tipoVeiculo: 'carro',
       modeloCodigoExterno: null,
       tipoConsulta: 'tradicional'
-    };
+    }
 
     let opts = {
       method: 'POST',
@@ -129,10 +156,10 @@ module.exports = class FIPE {
       uri: `${base_url}/api/veiculos/ConsultarValorComTodosParametros`,
       json: true,
       transform: (vehicle) => {
-        return new Vehicle(vehicle);
+        return new Vehicle(vehicle)
       }
-    };
+    }
 
-    return await request(opts);
-  };
+    return await request(opts)
+  }
 };
